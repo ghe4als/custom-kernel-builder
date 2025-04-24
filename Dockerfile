@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     git \
     ccache \
     docker.io \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /kernel
