@@ -33,14 +33,29 @@ cd linux-${KERNEL_VERSION}
 echo "Creating base kernel configuration..." | tee -a $OUTPUT_LOG
 make defconfig >> $OUTPUT_LOG 2>&1
 
-# Build kernel with regular progress updates
+# Build kernel with cleaner progress updates
 echo "Building kernel (this will take a while)..." | tee -a $OUTPUT_LOG
-make -j${JOBS} V=1 2>&1 | tee -a $OUTPUT_LOG | while read line; do
-    # Print a progress indicator every 100 lines
-    if [ $((RANDOM % 100)) -eq 0 ]; then
-        echo "$(date): Still building... Recent file: $(echo "$line" | grep -o '[^ ]*\.[co]' | tail -1)" | tee -a /kernel/build_progress.log
-    fi
+
+# Run make in the background and capture its PID
+make -j${JOBS} >> $OUTPUT_LOG 2>&1 &
+MAKE_PID=$!
+
+# Monitor progress in the foreground
+echo "Starting progress monitor..."
+while kill -0 $MAKE_PID 2>/dev/null; do
+    # Count object files every 5 minutes
+    FILES_COUNT=$(find . -name "*.o" | wc -l)
+    echo "$(date): Build in progress - ${FILES_COUNT} files compiled so far" | tee -a /kernel/build_progress.log
+    sleep 300
 done
+
+# Check if make completed successfully
+wait $MAKE_PID
+MAKE_EXIT=$?
+if [ $MAKE_EXIT -ne 0 ]; then
+    echo "Kernel build failed with exit code $MAKE_EXIT" | tee -a $OUTPUT_LOG
+    exit $MAKE_EXIT
+fi
 
 # Build modules
 echo "Building kernel modules..." | tee -a $OUTPUT_LOG
