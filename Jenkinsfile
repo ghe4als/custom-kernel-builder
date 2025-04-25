@@ -11,6 +11,14 @@ pipeline {
                   -w /kernel \
                   custom-kernel-builder:latest \
                   bash -c "./build_kernel.sh"
+                
+                # Monitor the build
+                echo "Build started, monitoring progress..."
+                while docker ps | grep kernel-builder > /dev/null; do
+                    echo "$(date): Build still running..."
+                    docker exec kernel-builder bash -c "cd /tmp/kernel-build/linux-* && echo 'Current files:' && find . -name '*.o' | wc -l"
+                    sleep 300
+                done
                 '''
             }
         }

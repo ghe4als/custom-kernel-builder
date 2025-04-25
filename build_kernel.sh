@@ -33,9 +33,14 @@ cd linux-${KERNEL_VERSION}
 echo "Creating base kernel configuration..." | tee -a $OUTPUT_LOG
 make defconfig >> $OUTPUT_LOG 2>&1
 
-# Build kernel
+# Build kernel with regular progress updates
 echo "Building kernel (this will take a while)..." | tee -a $OUTPUT_LOG
-make -j${JOBS} >> $OUTPUT_LOG 2>&1
+make -j${JOBS} V=1 2>&1 | tee -a $OUTPUT_LOG | while read line; do
+    # Print a progress indicator every 100 lines
+    if [ $((RANDOM % 100)) -eq 0 ]; then
+        echo "$(date): Still building... Recent file: $(echo "$line" | grep -o '[^ ]*\.[co]' | tail -1)" | tee -a /kernel/build_progress.log
+    fi
+done
 
 # Build modules
 echo "Building kernel modules..." | tee -a $OUTPUT_LOG
