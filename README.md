@@ -1,0 +1,1 @@
+A custom kernel builder for Ubuntu to learn CI/CD concepts
