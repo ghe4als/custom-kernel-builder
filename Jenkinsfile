@@ -25,7 +25,7 @@ pipeline {
         
         stage('Archive Output') {
             steps {
-                archiveArtifacts artifacts: 'build_output.txt', onlyIfSuccessful: true
+                archiveArtifacts artifacts: 'build_output.txt, bzImage', onlyIfSuccessful: true
             }
         }
     }

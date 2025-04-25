@@ -70,5 +70,15 @@ find arch/x86/boot -name "bzImage" | tee -a $OUTPUT_LOG
 # Copy build log to the mounted volume
 cp $OUTPUT_LOG /kernel/
 
+# Copy the kernel if successfully built
+cp arch/x86/boot/bzImage /kernel/bzImage
+if [ $? -ne 0 ]; then
+    echo "Failed to copy kernel image" | tee -a $OUTPUT_LOG
+    exit 1
+fi
+echo "Kernel image copied to /kernel/bzImage" | tee -a $OUTPUT_LOG
+
+# End of script
+echo "Kernel build script completed successfully" | tee -a $OUTPUT_LOG
 echo "Build log saved to $OUTPUT_LOG"
 exit 0
